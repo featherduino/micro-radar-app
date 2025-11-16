@@ -1,0 +1,97 @@
+{
+  "name": "Compute Top Symbols",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 1,
+              "minutes": 0
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM top_symbols WHERE as_of_date = CURRENT_DATE;"
+      },
+      "id": "Clear Today",
+      "name": "Clear Today",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO top_symbols (as_of_date, sector_norm, symbol, sentiment, score, change_pct, volspike, rsi)\nSELECT\n    CURRENT_DATE,\n    sector,\n    symbol,\n    'Bullish',\n    score,\n    changePct,\n    volSpike,\n    rsi\nFROM bullish_detail_flat\nORDER BY score DESC\nLIMIT 25;"
+      },
+      "id": "Insert Top Bullish",
+      "name": "Insert Top Bullish",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO top_symbols (as_of_date, sector_norm, symbol, sentiment, score, change_pct, volspike, rsi)\nSELECT\n    CURRENT_DATE,\n    sector,\n    symbol,\n    'Bearish',\n    score,\n    changePct,\n    volSpike,\n    rsi\nFROM bearish_detail_flat\nORDER BY score ASC\nLIMIT 25;"
+      },
+      "id": "Insert Top Bearish",
+      "name": "Insert Top Bearish",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Clear Today": {
+      "main": [
+        [
+          {
+            "node": "Insert Top Bullish",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Insert Top Bearish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clear Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

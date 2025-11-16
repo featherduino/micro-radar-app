@@ -1,0 +1,77 @@
+{
+  "name": "Compute Sector Overview",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 0,
+              "minutes": 0
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM sector_overview WHERE as_of_date = CURRENT_DATE;"
+      },
+      "id": "Clear Today",
+      "name": "Clear Today",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sector_overview (sector_norm, as_of_date, bullish_score, bearish_score, avg_change_pct, avg_volspike)\nSELECT\n    COALESCE(b.sector, br.sector) AS sector_norm,\n    CURRENT_DATE AS as_of_date,\n    AVG(b.score) AS bullish_score,\n    AVG(br.score) AS bearish_score,\n    AVG(COALESCE(b.changePct, br.changePct)) AS avg_change_pct,\n    AVG(COALESCE(b.volSpike, br.volSpike)) AS avg_volspike\nFROM bullish_detail_flat b\nFULL OUTER JOIN bearish_detail_flat br ON b.sector = br.sector\nGROUP BY COALESCE(b.sector, br.sector);"
+      },
+      "id": "Insert Overview",
+      "name": "Insert Overview",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Clear Today": {
+      "main": [
+        [
+          {
+            "node": "Insert Overview",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clear Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

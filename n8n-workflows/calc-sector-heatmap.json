@@ -1,0 +1,75 @@
+{
+  "name": "Compute Sector Heatmap",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 0,
+              "minutes": 30
+            }
+          ]
+        }
+      },
+      "id": "Cron",
+      "name": "Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "DELETE FROM sector_heatmap WHERE as_of_date = CURRENT_DATE;"
+      },
+      "id": "Clear Today",
+      "name": "Clear Today",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sector_heatmap (sector_norm, as_of_date, score, rsi, change_pct, volspike)\nSELECT\n    sector,\n    CURRENT_DATE,\n    AVG(score) AS score,\n    AVG(rsi) AS rsi,\n    AVG(changePct) AS change_pct,\n    AVG(volSpike) AS volspike\nFROM bullish_detail_flat\nGROUP BY sector;"
+      },
+      "id": "Insert Heatmap",
+      "name": "Insert Heatmap",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 1,
+      "credentials": {
+        "postgres": {
+          "id": "8qwzhwEtKNBNnyn6"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Clear Today": {
+      "main": [
+        [
+          {
+            "node": "Insert Heatmap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Clear Today",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

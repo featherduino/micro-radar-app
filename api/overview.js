@@ -1,10 +1,14 @@
-const router = require("express").Router();
-const { query } = require("../db");
+import { Pool } from "pg";
 
-router.get("/overview", async (req, res) => {
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+export default async function handler(req, res) {
   const { date } = req.query;
   try {
-    const rows = await query(
+    const result = await pool.query(
       `SELECT sector_norm, bullish_score, bearish_score, 
               avg_change_pct AS momentum_pct, avg_volspike
          FROM sector_overview
@@ -12,10 +16,9 @@ router.get("/overview", async (req, res) => {
      ORDER BY bullish_score DESC`,
       [date]
     );
-    res.json(rows);
+    res.status(200).json(result.rows);
   } catch (err) {
+    console.error("OVERVIEW ERROR:", err);
     res.status(500).json({ error: "failed to fetch overview" });
   }
-});
-
-module.exports = router;
+}

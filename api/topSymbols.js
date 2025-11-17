@@ -1,10 +1,14 @@
-const router = require("express").Router();
-const { query } = require("../db");
-router.get("/top-symbols", async (req, res) => {
-  const date = req.query.date;
+import { Pool } from "pg";
 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
+
+export default async function handler(req, res) {
+  const { date } = req.query;
   try {
-    const rows = await query(
+    const result = await pool.query(
       `SELECT sector_norm, symbol, sentiment,
               score, change_pct, volspike, rsi
          FROM top_symbols
@@ -13,13 +17,9 @@ router.get("/top-symbols", async (req, res) => {
         LIMIT 50`,
       [date]
     );
-
-    res.json(rows);
+    res.status(200).json(result.rows);
   } catch (err) {
     console.error("TOP SYMBOLS ERROR:", err);
     res.status(500).json({ error: "failed to load top symbols" });
   }
-});
-
-
-module.exports = router;
+}

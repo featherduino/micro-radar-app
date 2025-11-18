@@ -2,11 +2,11 @@ const express = require("express");
 const cors = require("cors");
 
 // load route handlers (they export router objects)
-const health = require("./src/health");
-const dates = require("./src/dates");
-const overview = require("./src/overview");
-const heatmap = require("./src/heatmap");
-const topSymbols = require("./src/topSymbols");
+const health = require("./health");
+const dates = require("./dates");
+const overview = require("./overview");
+const heatmap = require("./heatmap");
+const topSymbols = require("./topSymbols");
 
 const app = express();
 app.use(cors());

@@ -1,14 +1,13 @@
-import { Pool } from "pg";
+const router = require("express").Router();
+const db = require("../db");
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
-
-export default async function handler(req, res) {
+router.get("/top-symbols", async (req, res) => {
   const { date } = req.query;
+
+  if (!date) return res.status(400).json({ error: "date is required" });
+
   try {
-    const result = await pool.query(
+    const rows = await db.query(
       `SELECT sector_norm, symbol, sentiment,
               score, change_pct, volspike, rsi
          FROM top_symbols
@@ -17,9 +16,11 @@ export default async function handler(req, res) {
         LIMIT 50`,
       [date]
     );
-    res.status(200).json(result.rows);
+    res.json(rows);
   } catch (err) {
     console.error("TOP SYMBOLS ERROR:", err);
     res.status(500).json({ error: "failed to load top symbols" });
   }
-}
+});
+
+module.exports = router;

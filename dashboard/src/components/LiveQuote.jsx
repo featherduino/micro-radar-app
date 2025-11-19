@@ -26,8 +26,10 @@ export default function LiveQuote({ symbols }) {
   useEffect(() => {
     if (!selected) return;
     let cancelled = false;
+
     setLoading(true);
     setError("");
+
     api
       .get(`/nse/quote?symbol=${encodeURIComponent(selected)}`)
       .then((res) => {
@@ -39,43 +41,40 @@ export default function LiveQuote({ symbols }) {
         setQuote(null);
         setError(err?.message || "Failed to load live quote");
       })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
+      .finally(() => !cancelled && setLoading(false));
 
-    return () => {
-      cancelled = true;
-    };
+    return () => (cancelled = true);
   }, [selected, refreshKey]);
+
+  const q = quote || {};
 
   return (
     <div style={{ marginTop: 32, padding: 20, borderRadius: 12, background: "#f3f4f6" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <h2 style={{ margin: 0 }}>📡 Live NSE Quote</h2>
+        <h2>📡 Live NSE Quote</h2>
+
         <select
           value={selected}
           onChange={(e) => setSelected(e.target.value)}
-          style={{ padding: 8, minWidth: 160 }}
           disabled={!symbolOptions.length}
+          style={{ padding: 8, minWidth: 160 }}
         >
-          {!symbolOptions.length && <option value="">No symbols loaded</option>}
+          {!symbolOptions.length && <option>No symbols</option>}
           {symbolOptions.map((sym) => (
-            <option key={sym} value={sym}>
-              {sym}
-            </option>
+            <option key={sym}>{sym}</option>
           ))}
         </select>
+
         <button
-          type="button"
           onClick={() => setRefreshKey((n) => n + 1)}
           disabled={!selected || loading}
-          style={{ padding: "8px 14px", cursor: loading ? "default" : "pointer" }}
+          style={{ padding: "8px 14px" }}
         >
-          {loading ? "Loading..." : "Refresh"}
+          {loading ? "Loading…" : "Refresh"}
         </button>
       </div>
 
-      {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}
+      {error && <p style={{ color: "red" }}>{error}</p>}
 
       {quote && (
         <div
@@ -86,29 +85,32 @@ export default function LiveQuote({ symbols }) {
             gap: 8,
           }}
         >
-          <Stat label="Symbol" value={quote.info?.symbol || quote.metadata?.symbol} />
-          <Stat label="Industry" value={quote.info?.industry || quote.metadata?.industry} />
-          <Stat label="Last Price" value={fmt(quote.priceInfo?.lastPrice)} />
+          <Stat label="Symbol" value={q.symbol} />
+          <Stat label="Company" value={q.companyName} />
+          <Stat label="Industry" value={q.industry} />
+          <Stat label="Sector" value={q.sector} />
+
+          <Stat label="Last Price" value={fmt(q.lastPrice)} />
           <Stat
             label="Change (%)"
             value={
-              quote.priceInfo?.pChange != null
-                ? `${fmt(quote.priceInfo?.change)} (${fmt(quote.priceInfo?.pChange)}%)`
-                : fmt(quote.priceInfo?.change)
+              q.pChange != null
+                ? `${fmt(q.change)} (${fmt(q.pChange)}%)`
+                : fmt(q.change)
             }
           />
-          <Stat label="Open" value={fmt(quote.priceInfo?.open)} />
-          <Stat label="Day High" value={fmt(quote.priceInfo?.intraDayHighLow?.max)} />
-          <Stat label="Day Low" value={fmt(quote.priceInfo?.intraDayHighLow?.min)} />
-          <Stat label="Prev Close" value={fmt(quote.priceInfo?.prevClose)} />
-          <Stat label="52W High" value={fmt(quote.priceInfo?.weekHighLow?.max)} />
-          <Stat label="52W Low" value={fmt(quote.priceInfo?.weekHighLow?.min)} />
-          <Stat label="Volume" value={fmt(quote.priceInfo?.totalTradedVolume)} />
-          <Stat label="Value (₹)" value={fmt(quote.priceInfo?.totalTradedValue)} />
-          <Stat label="VWAP" value={fmt(quote.priceInfo?.vwap)} />
-          <Stat label="Upper Circuit" value={fmt(quote.priceInfo?.upperCP)} />
-          <Stat label="Lower Circuit" value={fmt(quote.priceInfo?.lowerCP)} />
-          <Stat label="Updated" value={quote.priceInfo?.lastUpdateTime || "—"} />
+
+          <Stat label="Open" value={fmt(q.open)} />
+          <Stat label="Day High" value={fmt(q.dayHigh)} />
+          <Stat label="Day Low" value={fmt(q.dayLow)} />
+          <Stat label="Prev Close" value={fmt(q.prevClose)} />
+
+          <Stat label="52W High" value={fmt(q.weekHigh)} />
+          <Stat label="52W Low" value={fmt(q.weekLow)} />
+
+          <Stat label="Volume" value={fmt(q.volume)} />
+
+          <Stat label="Updated" value={q.lastUpdateTime || "—"} />
         </div>
       )}
     </div>
@@ -125,19 +127,14 @@ function Stat({ label, value }) {
         boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
       }}
     >
-      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{label}</div>
-      <div style={{ fontWeight: 600, color: "#0f172a" }}>{value ?? "—"}</div>
+      <div style={{ fontSize: 12, color: "#64748b" }}>{label}</div>
+      <div style={{ fontWeight: 600 }}>{value ?? "—"}</div>
     </div>
   );
 }
 
 function fmt(val) {
   if (val == null) return "—";
-  if (typeof val === "number") {
-    if (Math.abs(val) >= 1000) {
-      return val.toLocaleString("en-IN");
-    }
-    return val.toFixed(2);
-  }
+  if (typeof val === "number") return val.toLocaleString("en-IN");
   return val;
 }

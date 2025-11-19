@@ -70,7 +70,21 @@ export default function Heatmap({ heatmap }) {
   };
 
   return (
-    <div style={{ height: 420, marginTop: 30 }}>
+    <div
+      style={{
+        height: 420,
+        marginTop: 8,
+        marginBottom: 32,
+        maxWidth: 1200,
+        width: "100%",
+        marginLeft: "auto",
+        marginRight: "auto",
+        background: "#fff",
+        padding: 16,
+        borderRadius: 12,
+        boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
+      }}
+    >
       <Bar data={data} options={options} />
     </div>
   );

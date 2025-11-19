@@ -116,12 +116,17 @@ export default function MomentumChart({ overview, onSectorClick }) {
     <div
       style={{
         height: 420,
-        marginTop: 20,
+        marginTop: 24,
+        marginBottom: 32,
         position: "relative",
         maxWidth: 1200,
         width: "100%",
         marginLeft: "auto",
         marginRight: "auto",
+        background: "#fff",
+        padding: 16,
+        borderRadius: 12,
+        boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
       }}
     >
       <Scatter ref={chartRef} data={data} options={options} />

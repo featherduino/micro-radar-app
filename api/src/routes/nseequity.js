@@ -4,59 +4,57 @@ const { NseIndia } = require("stock-nse-india");
 const router = express.Router();
 const nse = new NseIndia();
 
-// Safe getter
-const get = (obj, path, fallback = null) => {
-  try {
-    return path.split(".").reduce((o, k) => (o ? o[k] : null), obj) ?? fallback;
-  } catch {
-    return fallback;
-  }
-};
+function safe(obj, key, fallback = null) {
+  if (!obj || typeof obj !== "object") return fallback;
+  return obj[key] ?? fallback;
+}
 
 router.get("/nse/quote", async (req, res) => {
+  const qs = req.query.symbols || req.query.symbol;
+  if (!qs) return res.status(400).json({ error: "symbol is required" });
+
+  const symbols = qs.split(",").map(s => s.trim().toUpperCase());
+
   try {
-    const param = req.query.symbols || req.query.symbol;
-    if (!param) return res.status(400).json({ error: "symbol is required" });
+    const results = await Promise.all(symbols.map(async (sym) => {
+      const data = await nse.getEquityDetails(sym);
 
-    const symbols = param
-      .split(",")
-      .map((s) => s.trim().toUpperCase())
-      .filter(Boolean);
+      const info = data.info || {};
+      const price = data.priceInfo || {};
+      const meta  = data.metadata || {};
+      const ind   = data.industryInfo || {};
 
-    const results = await Promise.all(
-      symbols.map(async (sym) => {
-        const raw = await nse.getEquityDetails(sym);
+      return {
+        symbol: info.symbol || sym,
+        companyName: info.companyName || meta.companyName || sym,
+        industry: ind.industry || info.industry || null,
+        sector: ind.sector || null,
+        macro: ind.macro || null,
 
-        return {
-          symbol: sym,
-          companyName: get(raw, "info.companyName"),
-          sector: get(raw, "industryInfo.sector"),
-          industry: get(raw, "industryInfo.industry"),
-          basicIndustry: get(raw, "industryInfo.basicIndustry"),
-          macro: get(raw, "industryInfo.macro"),
+        lastPrice: price.lastPrice ?? null,
+        change: price.change ?? null,
+        pChange: price.pChange ?? null,
 
-          lastPrice: get(raw, "priceInfo.lastPrice"),
-          change: get(raw, "priceInfo.change"),
-          pChange: get(raw, "priceInfo.pChange"),
-          open: get(raw, "priceInfo.open"),
-          dayHigh: get(raw, "priceInfo.intraDayHighLow.max"),
-          dayLow: get(raw, "priceInfo.intraDayHighLow.min"),
-          prevClose: get(raw, "priceInfo.previousClose"),
-          weekHigh: get(raw, "priceInfo.weekHighLow.max"),
-          weekLow: get(raw, "priceInfo.weekHighLow.min"),
-          volume: get(raw, "preOpenMarket.totalTradedVolume"),
+        open: price.open ?? null,
+        dayHigh: safe(price.intraDayHighLow, "max"),
+        dayLow: safe(price.intraDayHighLow, "min"),
 
-          isin: get(raw, "info.isin"),
-          listingDate: get(raw, "info.listingDate"),
-          lastUpdateTime: get(raw, "metadata.lastUpdateTime")
-        };
-      })
-    );
+        prevClose: price.previousClose || price.prevClose || null,
+        volume: price.totalTradedVolume ?? null,
+        lastUpdateTime: price.lastUpdateTime || meta.lastUpdateTime || null,
 
-    return res.json(symbols.length === 1 ? results[0] : results);
+        weekHigh: safe(price.weekHighLow, "max"),
+        weekLow: safe(price.weekHighLow, "min"),
+
+        peRatio: meta.pdSymbolPe || null,
+        sectorPe: meta.pdSectorPe || null,
+      };
+    }));
+
+    res.json(symbols.length === 1 ? results[0] : results);
   } catch (err) {
     console.error("NSE QUOTE ERROR:", err);
-    return res.status(500).json({ error: "failed to fetch live quote" });
+    res.status(500).json({ error: "failed to fetch NSE quote" });
   }
 });
 

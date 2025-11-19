@@ -113,21 +113,17 @@ export default function MomentumChart({ overview, onSectorClick }) {
   };
 
   return (
-    <div style={{ height: 420, marginTop: 20, position: "relative" }}>
-      {/* Quadrant Shading */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          pointerEvents: "none",
-          background: `
-            linear-gradient(to bottom, rgba(0,0,0,0.07) 50%, rgba(0,0,0,0) 50%),
-            linear-gradient(to right, rgba(0,0,0,0.07) 50%, rgba(0,0,0,0) 50%)
-          `,
-          backgroundSize: "100% 100%, 100% 100%",
-        }}
-      ></div>
-
+    <div
+      style={{
+        height: 420,
+        marginTop: 20,
+        position: "relative",
+        maxWidth: 1200,
+        width: "100%",
+        marginLeft: "auto",
+        marginRight: "auto",
+      }}
+    >
       <Scatter ref={chartRef} data={data} options={options} />
     </div>
   );

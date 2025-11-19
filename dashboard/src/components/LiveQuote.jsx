@@ -29,7 +29,7 @@ export default function LiveQuote({ symbols }) {
     setLoading(true);
     setError("");
     api
-      .get(`/nse/quote?symbol=${encodeURIComponent(selected)}`)
+      .get(`/nse/equity-details?symbol=${encodeURIComponent(selected)}`)
       .then((res) => {
         if (cancelled) return;
         setQuote(res.data);
@@ -78,21 +78,66 @@ export default function LiveQuote({ symbols }) {
       {error && <p style={{ color: "red", marginTop: 10 }}>{error}</p>}
 
       {quote && (
-        <div style={{ marginTop: 12, lineHeight: 1.5 }}>
-          <div>
-            <strong>{quote.symbol}</strong> {quote.industry ? `· ${quote.industry}` : ""}
-          </div>
-          <div>
-            Last: {quote.lastPrice ?? "—"} ({quote.change ?? "—"} / {quote.pChange ?? "—"}%)
-          </div>
-          <div>
-            O:{quote.open ?? "—"} H:{quote.dayHigh ?? "—"} L:{quote.dayLow ?? "—"} Prev Close:
-            {quote.prevClose ?? "—"}
-          </div>
-          <div>Volume: {quote.volume ?? "—"}</div>
-          <div>Updated: {quote.lastUpdateTime || "—"}</div>
+        <div
+          style={{
+            marginTop: 12,
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))",
+            gap: 8,
+          }}
+        >
+          <Stat label="Symbol" value={quote.info?.symbol || quote.metadata?.symbol} />
+          <Stat label="Industry" value={quote.info?.industry || quote.metadata?.industry} />
+          <Stat label="Last Price" value={fmt(quote.priceInfo?.lastPrice)} />
+          <Stat
+            label="Change (%)"
+            value={
+              quote.priceInfo?.pChange != null
+                ? `${fmt(quote.priceInfo?.change)} (${fmt(quote.priceInfo?.pChange)}%)`
+                : fmt(quote.priceInfo?.change)
+            }
+          />
+          <Stat label="Open" value={fmt(quote.priceInfo?.open)} />
+          <Stat label="Day High" value={fmt(quote.priceInfo?.intraDayHighLow?.max)} />
+          <Stat label="Day Low" value={fmt(quote.priceInfo?.intraDayHighLow?.min)} />
+          <Stat label="Prev Close" value={fmt(quote.priceInfo?.prevClose)} />
+          <Stat label="52W High" value={fmt(quote.priceInfo?.weekHighLow?.max)} />
+          <Stat label="52W Low" value={fmt(quote.priceInfo?.weekHighLow?.min)} />
+          <Stat label="Volume" value={fmt(quote.priceInfo?.totalTradedVolume)} />
+          <Stat label="Value (₹)" value={fmt(quote.priceInfo?.totalTradedValue)} />
+          <Stat label="VWAP" value={fmt(quote.priceInfo?.vwap)} />
+          <Stat label="Upper Circuit" value={fmt(quote.priceInfo?.upperCP)} />
+          <Stat label="Lower Circuit" value={fmt(quote.priceInfo?.lowerCP)} />
+          <Stat label="Updated" value={quote.priceInfo?.lastUpdateTime || "—"} />
         </div>
       )}
     </div>
   );
+}
+
+function Stat({ label, value }) {
+  return (
+    <div
+      style={{
+        padding: 10,
+        background: "#fff",
+        borderRadius: 10,
+        boxShadow: "0 1px 3px rgba(15,23,42,0.08)",
+      }}
+    >
+      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 4 }}>{label}</div>
+      <div style={{ fontWeight: 600, color: "#0f172a" }}>{value ?? "—"}</div>
+    </div>
+  );
+}
+
+function fmt(val) {
+  if (val == null) return "—";
+  if (typeof val === "number") {
+    if (Math.abs(val) >= 1000) {
+      return val.toLocaleString("en-IN");
+    }
+    return val.toFixed(2);
+  }
+  return val;
 }

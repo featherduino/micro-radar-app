@@ -29,7 +29,7 @@ export default function LiveQuote({ symbols }) {
     setLoading(true);
     setError("");
     api
-      .get(`/nse/equity-details?symbol=${encodeURIComponent(selected)}`)
+      .get(`/nse/quote?symbol=${encodeURIComponent(selected)}`)
       .then((res) => {
         if (cancelled) return;
         setQuote(res.data);

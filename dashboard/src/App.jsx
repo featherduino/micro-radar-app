@@ -4,6 +4,7 @@ import OverviewCards from "./components/Overview";
 import MomentumChart from "./components/MomentumChart";
 import Heatmap from "./components/HeatMap";
 import TopSymbols from "./components/TopSymbols";
+import LiveQuote from "./components/LiveQuote";
 import { api } from "./api/client";
 import "./chart-setup";
 
@@ -29,14 +30,15 @@ export default function App() {
 
       <OverviewCards overview={overview} />
       <MomentumChart
-  overview={overview}
-  onSectorClick={(s) => {
-    console.log("CLICKED:", s);
-    alert(`Sector clicked: ${s.sector_norm}`);
-  }}
-/>
+        overview={overview}
+        onSectorClick={(s) => {
+          console.log("CLICKED:", s);
+          alert(`Sector clicked: ${s.sector_norm}`);
+        }}
+      />
       <Heatmap heatmap={heatmap} />
       <TopSymbols symbols={symbols} />
+      <LiveQuote symbols={symbols || []} />
     </div>
   );
 }

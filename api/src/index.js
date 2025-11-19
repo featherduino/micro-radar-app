@@ -6,6 +6,7 @@ const dates = require("./routes/dates");
 const overview = require("./routes/overview");
 const heatmap = require("./routes/heatmap");
 const topSymbols = require("./routes/topSymbols");
+const nseequity = require("./routes/nseequity");
 
 const app = express();
 app.use(cors());
@@ -16,6 +17,7 @@ app.use("/api", dates);
 app.use("/api", overview);
 app.use("/api", heatmap);
 app.use("/api", topSymbols);
+app.use("/api", nseequity);
 
 // required for Render / Railway
 const PORT = process.env.PORT || 5000;

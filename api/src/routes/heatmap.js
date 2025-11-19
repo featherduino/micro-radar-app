@@ -8,9 +8,14 @@ router.get("/heatmap", async (req, res) => {
 
   try {
     const rows = await db.query(
-      `SELECT sector_norm, avg_score, avg_rsi, avg_change, avg_volspike
-         FROM sector_heatmap
-        WHERE as_of_date = $1`,
+      `SELECT 
+          sector_norm, 
+          score, 
+          rsi, 
+          change_pct, 
+          volspike
+       FROM sector_heatmap
+       WHERE as_of_date = $1`,
       [date]
     );
     res.json(rows);

@@ -1,3 +1,5 @@
+// src/index.js
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 
@@ -18,9 +20,12 @@ app.use("/api", overview);
 app.use("/api", heatmap);
 app.use("/api", topSymbols);
 app.use("/api", nseequity);
+app.get("/privacy", (req, res) => {
+  res.sendFile(__dirname + "/privacy.html");
+});
 
-// required for Render / Railway
-const PORT = process.env.PORT || 5000;
+
+const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`API running on port ${PORT}`));
 
 module.exports = app;

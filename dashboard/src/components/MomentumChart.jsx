@@ -28,10 +28,10 @@ export default function MomentumChart({ overview, onSectorClick }) {
   if (valid.length === 0) return null;
 
   // Compute quadrant mid points
-  const midX =
+  const _midX =
     valid.reduce((a, r) => a + Number(r.momentum_pct), 0) / valid.length;
 
-  const midY =
+  const _midY =
     valid.reduce((a, r) => a + Number(r.bullish_score), 0) / valid.length;
 
   // Group data by sector

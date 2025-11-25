@@ -6,25 +6,37 @@ export default function DatePicker({ value, onChange }) {
   const [initialized, setInitialized] = useState(false);
 
   useEffect(() => {
-    api.get("/dates").then((res) => {
-      const normalized = (res.data || []).map((r) => ({
-        as_of_date:
-          typeof r.as_of_date === "string"
-            ? r.as_of_date
-            : r.as_of_date instanceof Date
-            ? r.as_of_date.toISOString().slice(0, 10)
-            : String(r.as_of_date).slice(0, 10),
-      }));
+    api
+      .get("/dates")
+      .then((res) => {
+        const rows = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.data)
+          ? res.data.data
+          : [];
 
-      setDates(normalized);
+        const normalized = rows.map((r) => ({
+          as_of_date:
+            typeof r.as_of_date === "string"
+              ? r.as_of_date
+              : r.as_of_date instanceof Date
+              ? r.as_of_date.toISOString().slice(0, 10)
+              : String(r.as_of_date).slice(0, 10),
+        }));
 
-      // Only set default ONCE
-      if (!initialized && normalized.length > 0) {
-        onChange(normalized[0].as_of_date);
-        setInitialized(true);
-      }
-    });
-  }, []);
+        setDates(normalized);
+
+        // Only set default ONCE
+        if (!initialized && normalized.length > 0) {
+          onChange(normalized[0].as_of_date);
+          setInitialized(true);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to load dates:", err);
+        setDates([]);
+      });
+  }, [initialized, onChange]);
 
   return (
     <div style={{ marginBottom: 20 }}>

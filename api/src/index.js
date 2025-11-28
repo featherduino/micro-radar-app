@@ -9,6 +9,8 @@ const overview = require("./routes/overview");
 const heatmap = require("./routes/heatmap");
 const topSymbols = require("./routes/topSymbols");
 const nseequity = require("./routes/nseequity");
+const reports = require("./routes/reports");
+const n8nChatProxy = require("./routes/n8nChatProxy");
 
 const app = express();
 app.use(cors());
@@ -20,6 +22,8 @@ app.use("/api", overview);
 app.use("/api", heatmap);
 app.use("/api", topSymbols);
 app.use("/api", nseequity);
+app.use("/api", reports);
+app.use("/api", n8nChatProxy);
 app.get("/privacy", (req, res) => {
   res.sendFile(__dirname + "/privacy.html");
 });

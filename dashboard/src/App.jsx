@@ -5,6 +5,7 @@ import MomentumChart from "./components/MomentumChart";
 import Heatmap from "./components/HeatMap";
 import TopSymbols from "./components/TopSymbols";
 import LiveQuote from "./components/LiveQuote";
+import N8nChatWidget from "./components/N8nChatWidget";
 import { api } from "./api/client";
 import "./chart-setup";
 
@@ -13,6 +14,7 @@ export default function App() {
   const [overview, setOverview] = useState(null);
   const [heatmap, setHeatmap] = useState(null);
   const [symbols, setSymbols] = useState(null);
+  const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK;
 
   useEffect(() => {
     if (!date) return;
@@ -39,6 +41,7 @@ export default function App() {
       <Heatmap heatmap={heatmap} />
       <TopSymbols symbols={symbols} />
       <LiveQuote symbols={symbols || []} />
+      <N8nChatWidget webhookUrl={chatWebhookUrl} />
     </div>
   );
 }

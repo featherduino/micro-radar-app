@@ -11,6 +11,7 @@ const topSymbols = require("./routes/topSymbols");
 const nseequity = require("./routes/nseequity");
 const reports = require("./routes/reports");
 const n8nChatProxy = require("./routes/n8nChatProxy");
+const docs = require("./routes/docs");
 
 const app = express();
 app.use(cors());
@@ -24,6 +25,7 @@ app.use("/api", topSymbols);
 app.use("/api", nseequity);
 app.use("/api", reports);
 app.use("/api", n8nChatProxy);
+app.use("/api", docs);
 app.get("/privacy", (req, res) => {
   res.sendFile(__dirname + "/privacy.html");
 });

@@ -12,6 +12,7 @@
     "node-fetch": "^3.3.2",
     "openai": "^4.67.3",
     "pg": "^8.11.3",
-    "stock-nse-india": "^1.2.2"
+    "stock-nse-india": "^1.2.2",
+    "swagger-ui-express": "^4.6.3"
   }
 }

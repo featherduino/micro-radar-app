@@ -6,6 +6,7 @@ import Heatmap from "./components/HeatMap";
 import TopSymbols from "./components/TopSymbols";
 import LiveQuote from "./components/LiveQuote";
 import N8nChatWidget from "./components/N8nChatWidget";
+import AdSlot from "./components/AdSlot";
 import { api } from "./api/client";
 import "./chart-setup";
 
@@ -15,6 +16,7 @@ export default function App() {
   const [heatmap, setHeatmap] = useState(null);
   const [symbols, setSymbols] = useState(null);
   const chatWebhookUrl = import.meta.env.VITE_N8N_CHAT_WEBHOOK;
+  const adSlotId = import.meta.env.VITE_ADSENSE_SLOT_ID_MAIN;
 
   useEffect(() => {
     if (!date) return;
@@ -38,6 +40,7 @@ export default function App() {
           alert(`Sector clicked: ${s.sector_norm}`);
         }}
       />
+      {adSlotId ? <AdSlot slot={adSlotId} /> : null}
       <Heatmap heatmap={heatmap} />
       <TopSymbols symbols={symbols} />
       <LiveQuote symbols={symbols || []} />
